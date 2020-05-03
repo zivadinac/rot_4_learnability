@@ -1,3 +1,4 @@
+from os import path
 import numpy as np
 import scipy.io
 
@@ -58,7 +59,7 @@ def loadPrenticeEtAl2016(data_dir, shuffle=True, seed=100):
         This function is adapted from loadDataSet function in original Aditya's code:
         https://github.com/adityagilra/UnsupervisedLearningNeuralData/blob/master/EMBasins_sbatch.py#L96
     """
-    retinaData = scipy.io.loadmat(data_dir + "data.mat")
+    retinaData = scipy.io.loadmat(path.join(data_dir, "data.mat"))
     # see: https://stackoverflow.com/questions/7008608/scipy-io-loadmat-nested-structures-i-e-dictionaries
     #  "For historic reasons, in Matlab everything is at least a 2D array, even scalars.
     #   So scipy.io.loadmat mimics Matlab behavior by default."
