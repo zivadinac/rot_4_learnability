@@ -7,6 +7,7 @@ from stimulus import getVideoStimulusLoader
 from models import LNP
 from receptive_fields import randomRetinalGanglionRFs
 import utils
+import data_utils
 
 def __createDataFileName(args):
     stim = path.basename(args.stimulus_path).split('.')[0]
@@ -47,8 +48,8 @@ for r in range(args.stimulus_repeats):
     for i,s in enumerate(vs):
         res.append(model(s.to(device)))
         #if i % 1000 == 0:
-        #    print(f"Finished step {i}.")
-    print(f"Finished repeat {i+1}/{args.stimulus_repeats}")
+        print(f"Finished step {i}.")
+    print(f"Finished repeat {r+1}/{args.stimulus_repeats}")
 res = torch.cat(res, 0).T.cpu()
 
 data = {"stimulus": path.basename(args.stimulus_path),\
