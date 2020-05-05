@@ -1,3 +1,4 @@
+import pickle
 from os import path
 import numpy as np
 import scipy.io
@@ -47,10 +48,10 @@ def spikeTimesToSpikeRaster(nrnSpikeTimes, binsteps):
         spikeRaster[ nrnnum, (np.array(nrnSpikeTimes[nrnnum]) / binsteps).astype(int) ] = 1.
     return spikeRaster
 
-def loadPrenticeEtAl2016(data_dir, shuffle=True, seed=100):
+def loadPrenticeEtAl2016(data_path, shuffle=True, seed=100):
     """ Load Prentice et al 2016 dataset.
         Args:
-            data_dir - dataset directory
+            data_path - dataset path
             shuffle - wheter to shuffle or not time bins
             seed - seed for random shuffling, used only if shuffle=True
         Return:
@@ -59,7 +60,7 @@ def loadPrenticeEtAl2016(data_dir, shuffle=True, seed=100):
         This function is adapted from loadDataSet function in original Aditya's code:
         https://github.com/adityagilra/UnsupervisedLearningNeuralData/blob/master/EMBasins_sbatch.py#L96
     """
-    retinaData = scipy.io.loadmat(path.join(data_dir, "data.mat"))
+    retinaData = scipy.io.loadmat(data_path)
     # see: https://stackoverflow.com/questions/7008608/scipy-io-loadmat-nested-structures-i-e-dictionaries
     #  "For historic reasons, in Matlab everything is at least a 2D array, even scalars.
     #   So scipy.io.loadmat mimics Matlab behavior by default."
@@ -96,10 +97,10 @@ def loadPrenticeEtAl2016(data_dir, shuffle=True, seed=100):
         spikeRaster = spikeRaster[:,shuffled_idxs]        
     return spikeRaster
 
-def loadSimulatedData(data_path):
+def loadSimulatedData(data_path, only_spikes=True):
     with open(data_path, "rb") as data_file:
         data = pickle.load(data_file)
-    return data
+    return data["data"] if only_spikes else data
 
 def saveSimulatedData(data_path, data):
     with open(data_path, "wb") as data_file:

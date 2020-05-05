@@ -1,55 +1,36 @@
 from argparse import ArgumentParser
 import numpy as np
-import shelve, sys, os.path
+import sys
+from os import path
+import pickle
 import data_utils
 import EMBasins
-#import TreeHMM
+import utils
 
-def saveFit(dataDir, crossValFold, shuffle, nModes, \
-            params, trans, P, emiss_prob, alpha, pred_prob, \
-            hist, samples, stationary_prob, \
-            trainLogLi, testLogLi):
-    dataBase = shelve.open(dataDir + ('data_shuffled' if shuffle else 'data') \
-                                        + '_HMM'+(str(crossValFold) if crossValFold>1 else '') \
-                                        #+ ('' if treeSpatialCorr else '_notree') \
-                                        +'_modes'+str(nModes)+'.shelve')
-    dataBase['params'] = params
-    dataBase['trans'] = trans
-    dataBase['P'] = P
-    dataBase['emiss_prob'] = emiss_prob
-    dataBase['alpha'] = alpha
-    dataBase['pred_prob'] = pred_prob
-    dataBase['hist'] = hist
-    dataBase['samples'] = samples
-    dataBase['stationary_prob'] = stationary_prob
-    dataBase['train_logli'] = trainLogLi
-    dataBase['test_logli'] = testLogLi
-    dataBase.close()
-
-
+# This script is based on original script writen by Aditya:
+# https://github.com/adityagilra/UnsupervisedLearningNeuralData/blob/master/EMBasins_sbatch.py
+# TODO naming convention - change to snake_case as in other files
 
 args = ArgumentParser()
-args.add_argument("--dataDir", default="../data/Prenticeetal2016_data/unique_natural_movie/")
-args.add_argument("--shuffle", default=0, type=bool, help="Don't shuffle time bins for Prentice et al data,\
-                                                but shuffle for Marre et al data and generated datasets")
+args.add_argument("dataPath")
+args.add_argument("outPath")
 args.add_argument("--crossValFold", default=2, type=int, help="k-fold validation, 1 for train only")
+args.add_argument("--nModes", default=70, type=int, help="Best nModes reported for experimental data in Prentice et al 2016")
+args.add_argument("--nIter", default=100, type=int, help="HMM training iterations.")
+args.add_argument("--seed", type=int, default=12345)
+#args.add_argument("--binSize", default=1)
+#args.add_argument("--shuffle", default=0, type=bool, help="Don't shuffle time bins for Prentice et al data,\
+#                                                but shuffle for Marre et al data and generated datasets")
 #args.add_argument("--treeSpatialCorr", default=1, help="Tree-based spatial correlations or no correlations")
 #args.add_argument("--maxModes", default=150, help="Max number of allowed modes")
-args.add_argument("--nModes", default=70, type=int, help="Best nModes reported for experimental data in Prentice et al 2016")
-#args.add_argument("--binSize", default=1)
-args.add_argument("--nIter", default=100, type=int, help="HMM training iterations.")
 args = args.parse_args()
 
+np.random.seed(args.seed)
 binSize = 1 # here, spikes are given pre-binned into a spikeRaster, just take binSize=1
-#args.nIter = 1
-# TODO write "SmartArgs wrapper, it will be very useful in the future"
 
-np.random.seed(100)
-
-spikeRaster = data_utils.loadPrenticeEtAl2016(args.dataDir, shuffle=args.shuffle)
-nNeurons, tSteps = spikeRaster.shape
-spikeRaster = spikeRaster[:,:tSteps] # HMM will split the dataset in train and test sets based on crossValFold
+spikeRaster = data_utils.loadSimulatedData(args.dataPath)
 nrnSpikeTimes = data_utils.spikeRasterToSpikeTimes(spikeRaster, binSize)
+nNeurons, tSteps = spikeRaster.shape
 
 print("Mixture model fitting for interaction factor = 1., nModes = ", args.nModes)
 sys.stdout.flush()
@@ -90,13 +71,15 @@ if args.crossValFold > 1:
         EMBasins.pyInit()
         params,trans,P,emiss_prob,alpha,pred_prob,hist,samples,stationary_prob,trainLogLi_this,testLogLi_this = \
             EMBasins.pyHMM(nrnSpikeTimes, unobserved_lo, unobserved_hi, float(binSize), args.nModes, args.nIter)
-        #EMBasins.pyInit()
+
         print(f"Finished cross validation round {k} of fitting.\
                 \nTrain logL = {trainLogLi_this[0][0]}\
                 \nTest logL = {testLogLi_this[0][0]}")
+
         trainLogLi[k,:] = trainLogLi_this.flatten()
         testLogLi[k,:] = testLogLi_this.flatten()
 else: # no cross-validation specified, train on full data
+    # hmmmm this should be same as crossValFold = 1
     params,trans,P,emiss_prob,alpha,pred_prob,hist,samples,stationary_prob,trainLogLi_this,testLogLi_this = \
         EMBasins.pyHMM(nrnSpikeTimes, np.ndarray([]), np.ndarray([]), float(binSize), args.nModes, args.nIter)
     trainLogLi[0,:] = trainLogLi_this.flatten()
@@ -108,7 +91,8 @@ print(f"Finished fitting mixture model for \
         \n\t logL = {trainLogLi}\
         \n\t test logL = {testLogLi}")
 
-saveFit(args.dataDir, args.crossValFold, args.shuffle, args.nModes, params, trans, P, emiss_prob, alpha, pred_prob, hist, samples, stationary_prob, trainLogLi, testLogLi)
-print("Fitted model saved.")
+fitPath = path.join(args.outPath, path.basename(args.dataPath))
+utils.saveFit(fitPath, args.crossValFold, False, args.nModes, params, trans, P, emiss_prob, alpha, pred_prob, hist, samples, stationary_prob, trainLogLi, testLogLi)
+print(f"Fitted model saved to {fitPath}.")
 sys.stdout.flush()
 
