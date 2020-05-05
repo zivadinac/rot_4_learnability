@@ -16,7 +16,7 @@ def __createDataFileName(args):
 args = ArgumentParser()
 args.add_argument("stimulus_path")
 args.add_argument("out_path")
-args.add_argument("--stimulus_repeats", type=int, default=1, help="Number of stimulus repeats during simulation.")
+args.add_argument("--stimulus_repeats", type=int, default=10, help="Number of stimulus repeats during simulation.")
 args.add_argument("--timesteps", type=int, default=16, help="Stimulus duration in number of frames.")
 #args.add_argument("--stimulus_duration", type=int, default=320, help="Stimulus duration in ms.")
 args.add_argument("--population_size", type=int, default=128, help="Number of neurons in a population.")
@@ -31,8 +31,6 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 device = torch.device("cuda:0" if args.use_gpu and torch.cuda.is_available() else "cpu")
-print(f"{args.use_gpu}")
-print(f"Using device {device}.")
 
 vs, vs_props = getVideoStimulusLoader(args.stimulus_path, args.timesteps, batch_size=args.batch_size)
 rfs = randomRetinalGanglionRFs(vs_props["spatial_shape"], args.timesteps, args.population_size)
@@ -40,16 +38,15 @@ model = LNP(vs_props["spatial_shape"], args.timesteps, args.population_size, rfs
 model.to(device)
 
 start = time()
-print(f"Starting simulation for {args.stimulus_path} and population size {args.population_size}.")
-#res = [model.forward(s) for s in vs]
+print(f"Starting simulation for {args.stimulus_path} and population size {args.population_size} on device: {device}.")
 res = []
 
 for r in range(args.stimulus_repeats):
     for i,s in enumerate(vs):
         res.append(model(s.to(device)))
         #if i % 1000 == 0:
-        print(f"Finished step {i}.")
-    print(f"Finished repeat {r+1}/{args.stimulus_repeats}")
+            #print(f"Finished step {i}.")
+    print(f"Finished repeat {r+1}/{args.stimulus_repeats} (population_size: {args.population_size}).")
 res = torch.cat(res, 0).T.cpu()
 
 data = {"stimulus": path.basename(args.stimulus_path),\
