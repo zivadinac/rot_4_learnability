@@ -15,7 +15,8 @@ class LNP(torch.nn.Module):
                 receptive_fields - 5d (population_size x 1 x timesteps x *spatial_shape) tensor with population receptive_fields
         """
 
-        self.receptive_fields = receptive_fields
+        super(LNP, self).__init__()
+        self.receptive_fields = torch.nn.Parameter(receptive_fields)
         self.__nonlienarity = torch.exp
         self.__nonlienarity = F.relu
         #self.__nonlienarity = lambda x: x**2

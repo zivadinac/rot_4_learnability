@@ -96,3 +96,12 @@ def loadPrenticeEtAl2016(data_dir, shuffle=True, seed=100):
         spikeRaster = spikeRaster[:,shuffled_idxs]        
     return spikeRaster
 
+def loadSimulatedData(data_path):
+    with open(data_path, "rb") as data_file:
+        data = pickle.load(data_file)
+    return data
+
+def saveSimulatedData(data_path, data):
+    with open(data_path, "wb") as data_file:
+        pickle.dump(data, data_file)
+
