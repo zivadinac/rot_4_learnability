@@ -91,7 +91,7 @@ print(f"Finished fitting mixture model for \
         \n\t logL = {trainLogLi}\
         \n\t test logL = {testLogLi}")
 
-fitPath = path.join(args.outPath, path.basename(args.dataPath))
+fitPath = path.join(args.outPath, path.basename(args.dataPath).split('.')[0] + f"_nModes_{args.nModes}_nIter_{args.nIter}.pck")
 utils.saveFit(fitPath, args.crossValFold, False, args.nModes, params, trans, P, emiss_prob, alpha, pred_prob, hist, samples, stationary_prob, trainLogLi, testLogLi)
 print(f"Fitted model saved to {fitPath}.")
 sys.stdout.flush()
