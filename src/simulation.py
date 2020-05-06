@@ -60,4 +60,4 @@ data = {"stimulus": path.basename(args.stimulus_path),\
 
 data_utils.saveSimulatedData(path.join(args.out_path, __createDataFileName(args) + ".pck"), data)
 end = time()
-print(f"Finished in {end-start} seconds. (batch_size = {args.batch_size}).")
+print(f"Finished in {end-start} seconds. (population_size: {args.population_size}).")
