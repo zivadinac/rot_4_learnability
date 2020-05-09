@@ -29,6 +29,7 @@ np.random.seed(args.seed)
 binSize = 1 # here, spikes are given pre-binned into a spikeRaster, just take binSize=1
 
 spikeRaster = data_utils.loadSimulatedData(args.dataPath)
+#spikeRaster = data_utils.loadPrenticeEtAl2016(args.dataPath, shuffle=False)
 nrnSpikeTimes = data_utils.spikeRasterToSpikeTimes(spikeRaster, binSize)
 nNeurons, tSteps = spikeRaster.shape
 
@@ -38,6 +39,7 @@ sys.stdout.flush()
 trainLogLi = np.zeros(shape=(args.crossValFold, args.nIter))
 testLogLi = np.zeros(shape=(args.crossValFold, args.nIter))
 
+train_iterations = args.nIter
 # TODO use same naming convention everywhere
 if args.crossValFold > 1:
     # translated from getHMMParams.m 
@@ -78,12 +80,20 @@ if args.crossValFold > 1:
 
         trainLogLi[k,:] = trainLogLi_this.flatten()
         testLogLi[k,:] = testLogLi_this.flatten()
+
+        train_iterations = trainLogLi_this.shape[1]
+        if train_iterations != args.nIter:
+            trainLogLi = trainLogLi[:, 0:train_iterations]
+            testLogLi = testLogLi[:, 0:train_iterations]
+            print(f"Training finished after {train_iterations} iterations.")
+"""
 else: # no cross-validation specified, train on full data
     # hmmmm this should be same as crossValFold = 1
     params,trans,P,emiss_prob,alpha,pred_prob,hist,samples,stationary_prob,trainLogLi_this,testLogLi_this = \
         EMBasins.pyHMM(nrnSpikeTimes, np.ndarray([]), np.ndarray([]), float(binSize), args.nModes, args.nIter)
     trainLogLi[0,:] = trainLogLi_this.flatten()
     testLogLi[0,:] = testLogLi_this.flatten()
+"""
 
 print(f"Finished fitting mixture model for \
         \n\t interaction factor = 1.\
@@ -91,7 +101,7 @@ print(f"Finished fitting mixture model for \
         \n\t logL = {trainLogLi}\
         \n\t test logL = {testLogLi}")
 
-fitPath = path.join(args.outPath, path.basename(args.dataPath).split('.')[0] + f"_nModes_{args.nModes}_nIter_{args.nIter}.pck")
+fitPath = path.join(args.outPath, path.basename(args.dataPath).split('.')[0] + f"_nModes_{args.nModes}.pck")
 utils.saveFit(fitPath, args.crossValFold, False, args.nModes, params, trans, P, emiss_prob, alpha, pred_prob, hist, samples, stationary_prob, trainLogLi, testLogLi)
 print(f"Fitted model saved to {fitPath}.")
 sys.stdout.flush()

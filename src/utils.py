@@ -3,6 +3,22 @@ import pickle
 import numpy as np
 from skimage.io import imsave
 
+class ObjView():
+    """
+        Simple class that enables viewing dict as an object (useful for REPL workflow).
+    """
+    def __init__(self, dictionary):
+        self.__dict__ = dictionary
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    """
+    # for now I just need view, no modification
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+    """
+
 def saveTiff(rf, path="rf.tiff"):
     rf -= rf.min()
     rf /= rf.max()
@@ -15,10 +31,11 @@ def saveArgs(out_path):
     with open(out_path, 'w') as out_file:
         out_file.write(' '.join(sys.argv[1:]))
 
-def loadFit(fit_path):
+def loadFit(fit_path, as_object=True):
     with open(fit_path, "rb") as fit_file:
         fit = pickle.load(fit_file)
-    return fit
+
+    return ObjView(fit) if as_object else fit
 
 def saveFit(fit_path, cross_val_fold, shuffle, n_modes, \
             params, trans, P, emiss_prob, alpha, pred_prob, \
