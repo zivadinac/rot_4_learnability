@@ -5,6 +5,7 @@ from os import path
 import pickle
 import data_utils
 import EMBasins
+EMBasins.pyInit()
 import utils
 
 # This script is based on original script writen by Aditya:
@@ -76,7 +77,6 @@ if args.crossValFold > 1:
         unobserved_lo = unobserved_lo.astype(np.float64)
         unobserved_hi = unobserved_hi.astype(np.float64)
 
-        EMBasins.pyInit()
         params,trans,P,emiss_prob,alpha,pred_prob,hist,samples,stationary_prob,trainLogLi_this,testLogLi_this = \
             EMBasins.pyHMM(nrnSpikeTimes, unobserved_lo, unobserved_hi, float(binSize), args.nModes, args.nIter)
 
