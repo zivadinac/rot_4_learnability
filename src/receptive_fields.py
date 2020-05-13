@@ -18,6 +18,11 @@ def __get2DGaussian(shape, mu=0.0, sigma=1.0):
     d = torch.sqrt(x*x+y*y)
     return (sigma * torch.sqrt(2. * torch.tensor(3.1415)))**-1 * torch.exp(-((d-mu)**2 / (2.0 * sigma**2)))
 
+def __getPositions(spatial_shape, population_size):
+    positions = torch.randint(spatial_shape[0] * spatial_shape[1], (population_size,))
+    positions = [(p // spatial_shape[1], p % spatial_shape[1]) for p in positions]
+    return positions
+
 def randomRetinalGanglionRFs(spatial_shape, timesteps, population_size, rf_size=None, mu=0.0, sigma_1=1.0, sigma_2=None):
     """ Generate random retinal ganglion receptive fields.
         Spatiall RF is difference of two Gaussians of randomly chosen sign (g1-g2 with probability 0.5 or g2-g1 with probability 0.5).
@@ -47,13 +52,10 @@ def randomRetinalGanglionRFs(spatial_shape, timesteps, population_size, rf_size=
         temporal_RF = __getNormalizedCos(timesteps)
         RF = spatial_RF * temporal_RF
 
-        #RF[torch.abs(RF) < RF.sum()] = 0.
         return RF
 
     rf_size = (spatial_shape[0] // 4, spatial_shape[1] // 4) if rf_size is None else rf_size
-
-    positions = torch.randint(spatial_shape[0] * spatial_shape[1], (population_size,))
-    positions = [(p // spatial_shape[1], p % spatial_shape[1]) for p in positions]
+    positions = __getPositions(spatial_shape, population_size)
 
     rfs = torch.zeros(population_size, 1, timesteps, *spatial_shape)
     for i, p in enumerate(positions):
@@ -67,5 +69,29 @@ def randomRetinalGanglionRFs(spatial_shape, timesteps, population_size, rf_size=
         rfs[i, 0, :, h_l:h_u, w_l:w_u] = __getRF(rf_size, timesteps, mu, sigma_1, sigma_2)[:, 0:h_u-h_l, 0:w_u-w_l]
         # maybe randomize which part of rf ends in rfs (last indexing)?
 
-    return rfs
+    return rfs, positions
+
+"""
+import matplotlib.pyplot as plt
+
+spatial_shape = (256, 256)
+rf_size = (16, 16)
+population_size = 1024
+timesteps = 16
+
+rf = randomRetinalGanglionRFs(spatial_shape, timesteps, population_size, rf_size)
+positions = __getPositions(spatial_shape, population_size)
+
+a = torch.zeros(spatial_shape)
+for i, p in enumerate(positions):
+    a += rf[i, 0, 0]
+#    a[p[0], p[1]] = 1.
+
+print((a == 0).sum())
+
+#plt.imshow(a.numpy(), cmap='hot')
+plt.imshow(rf[0,0,0].numpy(), cmap='hot')
+plt.colorbar()
+plt.show()
+"""
 

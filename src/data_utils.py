@@ -2,6 +2,8 @@ import pickle
 from os import path
 import numpy as np
 import scipy.io
+from utils import ObjView
+import torch
 
 def spikeRasterToSpikeTimes(spikeRaster, binsize):
     """
@@ -97,12 +99,30 @@ def loadPrenticeEtAl2016(data_path, shuffle=True, seed=100):
         spikeRaster = spikeRaster[:,shuffled_idxs]        
     return spikeRaster
 
-def loadSimulatedData(data_path, only_spikes=True):
+def loadSimulatedData(data_path, clip_bins=True, as_object=True):
+    """
+        Load data generated in a simulation.
+
+        Args:
+            data_path - path to data file
+            clip_bins - limit number of spikes to 1 per bin (e.g. get binary data)
+            as_object - return object containing data
+
+        Return:
+            Data saved in `data_path` location
+    """
     with open(data_path, "rb") as data_file:
         data = pickle.load(data_file)
-    return data["data"] if only_spikes else data
+
+    if clip_bins:
+        data["data"] = np.clip(data["data"], 0, 1)
+
+    if as_object:
+        data = ObjView(data)
+
+    return data
 
 def saveSimulatedData(data_path, data):
     with open(data_path, "wb") as data_file:
-        pickle.dump(data, data_file)
+        pickle.dump(data, data_file, protocol=4)
 

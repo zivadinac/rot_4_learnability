@@ -2,6 +2,8 @@ import sys
 import pickle
 import numpy as np
 from skimage.io import imsave
+import matplotlib.pyplot as plt
+from matplotlib import cm as cm
 
 class ObjView():
     """
@@ -57,3 +59,16 @@ def saveFit(fit_path, cross_val_fold, shuffle, n_modes, \
     hmmFit["n_modes"] = n_modes
     with open(fit_path, "wb") as fitFile:
         pickle.dump(hmmFit, fitFile)
+
+def plotCorrelationMatrix(corr_mat, title):
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    plt.title(title)
+    cmap = cm.get_cmap('jet', 30)
+    cax = ax1.imshow(corr_mat, interpolation="nearest", cmap=cmap)
+    ax1.grid(True)
+    labels = np.arange(corr_mat.shape[0])
+    ax1.set_xticklabels(labels,fontsize=6)
+    ax1.set_yticklabels(labels,fontsize=6)
+    fig.colorbar(cax, ticks=[.75,.8,.85,.90,.95,1])
+    plt.show()

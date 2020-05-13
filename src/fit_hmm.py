@@ -35,7 +35,7 @@ args.nIter = 2
 np.random.seed(args.seed)
 binSize = 1 # here, spikes are given pre-binned into a spikeRaster, just take binSize=1
 
-spikeRaster = data_utils.loadSimulatedData(args.dataPath)
+spikeRaster = data_utils.loadSimulatedData(args.dataPath).data
 #spikeRaster = data_utils.loadPrenticeEtAl2016(args.dataPath, shuffle=False)
 nrnSpikeTimes = data_utils.spikeRasterToSpikeTimes(spikeRaster, binSize)
 nNeurons, tSteps = spikeRaster.shape
