@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import pickle
 from os import path
-from time import time
+import time
 import torch
 from stimulus import getVideoStimulusLoader
 from models import LNP
@@ -23,13 +23,14 @@ args.add_argument("--population_size", type=int, default=128, help="Number of ne
 args.add_argument("--rf_size", type=int, nargs=2, default=None, help="Spatial size of each receptive field (height width).")
 args.add_argument("--off_prob", type=float, default=0.5, help="Probability of generating an OFF receptive field.")
 args.add_argument("--batch_size", type=int, default=1)
-args.add_argument("--seed", type=int, default=12345)
+args.add_argument("--seed", type=int, default=None)
 args.add_argument("--use_gpu", type=int, default=1)
 args.add_argument("--save_rfs", type=int, default=0)
 args = args.parse_args()
 utils.saveArgs(path.join(args.out_path, __createDataFileName(args) + ".txt"))
 
-torch.manual_seed(args.seed)
+seed = int(time.time_ns()) if args.seed is None else args.seed
+torch.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
@@ -40,7 +41,7 @@ rfs, rf_positions = randomRetinalGanglionRFs(vs_props["spatial_shape"], args.tim
 model = LNP(vs_props["spatial_shape"], args.timesteps, args.population_size, rfs)
 model.to(device)
 
-start = time()
+start = time.time()
 print(f"Starting simulation for {args.stimulus_path} and population size {args.population_size} on device: {device}.")
 res = []
 
@@ -60,10 +61,10 @@ data = {"stimulus": path.basename(args.stimulus_path),\
         "rfs": rfs if args.save_rfs else None,\
         "rf_positions": rf_positions.numpy(),\
         "off_prob": args.off_prob,\
-        "seed": args.seed,\
+        "seed": seed,\
         "stimulus_repeats": args.stimulus_repeats,\
         "data": res.numpy()}
 
 data_utils.saveSimulatedData(path.join(args.out_path, __createDataFileName(args) + ".pck"), data)
-end = time()
+end = time.time()
 print(f"Finished in {end-start} seconds. (population_size: {args.population_size}).")
