@@ -58,7 +58,7 @@ data = {"stimulus": path.basename(args.stimulus_path),\
         "stimulus_spatial_shape": vs_props["spatial_shape"],\
         "population_size": args.population_size,\
         "rfs": rfs if args.save_rfs else None,\
-        "rf_positions": rf_positions,\
+        "rf_positions": rf_positions.numpy(),\
         "off_prob": args.off_prob,\
         "seed": args.seed,\
         "stimulus_repeats": args.stimulus_repeats,\
