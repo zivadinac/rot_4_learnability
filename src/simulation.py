@@ -29,7 +29,7 @@ args.add_argument("--save_rfs", type=int, default=0)
 args = args.parse_args()
 utils.saveArgs(path.join(args.out_path, __createDataFileName(args) + ".txt"))
 
-seed = int(time.time_ns()) if args.seed is None else args.seed
+seed = int(time.strftime("%Y%j")) if args.seed is None else args.seed
 torch.manual_seed(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
