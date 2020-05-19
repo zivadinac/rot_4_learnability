@@ -126,3 +126,27 @@ def saveSimulatedData(data_path, data):
     with open(data_path, "wb") as data_file:
         pickle.dump(data, data_file, protocol=4)
 
+def save(data_path, data):
+    with open(data_path, "wb") as data_file:
+        pickle.dump(data, data_file, protocol=4)
+
+def load(data_path, as_object=True):
+    with open(data_path, "rb") as data_file:
+        data = pickle.load(data_file)
+
+    if as_object:
+        data = ObjView(data)
+
+    return data
+
+def excludeNonFiringNeurons(spikes):
+    retained_inds = []
+    excluded_inds = []
+    for i in range(spikes.shape[0]):
+        if not np.all(spikes[i] == spikes[i][0]):
+            retained_inds.append(i)
+        else:
+            excluded_inds.append(i)
+    #print(f"Excluded neurons: {excluded_inds} ({len(excluded_inds)}, {100*len(excluded_inds)/spikes.shape[0]}%)")
+    return spikes[retained_inds, :], retained_inds, excluded_inds
+

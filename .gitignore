@@ -134,3 +134,9 @@ tags
 *.swp
 *.swo
 
+# data
+data/nat_stim/nat_stim_*
+data/simulated/retina_*
+data/corr_mat/retina_*
+data/prentice_et_al_2016/*/
+data/prentice_et_al_2016/.DS_Store
