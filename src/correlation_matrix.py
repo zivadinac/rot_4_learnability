@@ -13,7 +13,7 @@ def computeCorrelationMatrix(spikes):
             corr_mat[i,j] = corr_mat[j,i] = c
             corrs.append(c)
     corrs = np.array(corrs)
-    return corrs, corrs.mean(), np.median(corrs)
+    return corr_mat#, corrs.mean(), corrs.abs().mean(), np.median(corrs)
 
 def __createCorrDataFileName(args):
     stim = path.basename(args.data_path).split('.')[0]
@@ -24,13 +24,15 @@ if __name__ == "__main__":
     args = ArgumentParser()
     args.add_argument("--data_path")
     args.add_argument("--out_path")
-    args.add_argument("--simulated_data", type=int, default=1)
     args = args.parse_args()
 
-    spikes = data_utils.loadSimulatedData(args.data_path).data if args.simulated_data else data_utils.loadPrenticeEtAl2016(args.data_path)
+    spikes = data_utils.loadSpikeData(args.data_path).data
+    ps = spikes.shape[0]
     spikes, retained_inds, excluded_inds = data_utils.excludeNonFiringNeurons(spikes)
+    assert ps == len(retained_neurons) + len(excluded_neurons)
     corr = computeCorrelationMatrix(spikes)
-    d = {"corr_mat": corr, "retained_neurons": retained_inds, "excluded_neurons": excluded_inds}
+    d = {"corr_mat": corr, "population_size": ps,\
+         "retained_neurons": retained_inds, "excluded_neurons": excluded_inds}
 
     data_utils.save(path.join(args.out_path, __createCorrDataFileName(args)), d)
 

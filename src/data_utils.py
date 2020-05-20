@@ -50,12 +50,13 @@ def spikeTimesToSpikeRaster(nrnSpikeTimes, binsteps):
         spikeRaster[ nrnnum, (np.array(nrnSpikeTimes[nrnnum]) / binsteps).astype(int) ] = 1.
     return spikeRaster
 
-def loadPrenticeEtAl2016(data_path, shuffle=True, seed=100):
+def loadPrenticeEtAl2016(data_path, shuffle=True, seed=100, as_object=True):
     """ Load Prentice et al 2016 dataset.
         Args:
             data_path - dataset path
             shuffle - wheter to shuffle or not time bins
             seed - seed for random shuffling, used only if shuffle=True
+            as_object - return object containing data
         Return:
             2D array (neurons x bin_num) with spike indicators in each bin
 
@@ -97,7 +98,9 @@ def loadPrenticeEtAl2016(data_path, shuffle=True, seed=100):
         np.random.seed(seed)
         shuffled_idxs = np.random.permutation(np.arange(tSteps,dtype=np.int32))
         spikeRaster = spikeRaster[:,shuffled_idxs]        
-    return spikeRaster
+
+    d = {"data": spikeRaster}
+    return ObjView(d) if as_object else d
 
 def loadSimulatedData(data_path, clip_bins=True, as_object=True):
     """
@@ -121,6 +124,10 @@ def loadSimulatedData(data_path, clip_bins=True, as_object=True):
         data = ObjView(data)
 
     return data
+
+def loadSpikeData(data_path):
+    _, ext = path.splitext(data_path) # prentice et al data comes as .mat file, TODO maybe I should resave it as pickle?
+    return loadPrenticeEtAl2016(data_path, shuffle=False) if ext == ".mat" else loadSimulatedData(data_path)
 
 def saveSimulatedData(data_path, data):
     with open(data_path, "wb") as data_file:
