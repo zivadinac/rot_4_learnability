@@ -27,11 +27,11 @@ if __name__ == "__main__":
 
     spikes = data_utils.loadSpikeData(args.data_path).data
     ps = spikes.shape[0]
-    spikes, retained_inds, excluded_inds = data_utils.excludeNonFiringNeurons(spikes)
+    spikes, retained_neurons, excluded_neurons = data_utils.excludeNonFiringNeurons(spikes)
     assert ps == len(retained_neurons) + len(excluded_neurons)
     corr = computeCorrelationMatrix(spikes)
     d = {"corr_mat": corr, "population_size": ps,\
-         "retained_neurons": retained_inds, "excluded_neurons": excluded_inds}
+         "retained_neurons": retained_neurons, "excluded_neurons": excluded_neurons}
 
     data_utils.save(path.join(args.out_path, __createCorrDataFileName(args, ps)), d)
 
