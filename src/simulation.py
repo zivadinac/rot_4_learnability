@@ -20,6 +20,7 @@ args.add_argument("--stimulus_repeats", type=int, default=10, help="Number of st
 args.add_argument("--timesteps", type=int, default=16, help="Stimulus duration in number of frames.")
 #args.add_argument("--stimulus_duration", type=int, default=320, help="Stimulus duration in ms.")
 args.add_argument("--population_size", type=int, default=128, help="Number of neurons in a population.")
+args.add_argument("--noise_corr", type=float, default=None, help="Correlation of additive noise between neurons.")
 args.add_argument("--rf_size", type=int, nargs=2, default=None, help="Spatial size of each receptive field (height width).")
 args.add_argument("--off_prob", type=float, default=0.5, help="Probability of generating an OFF receptive field.")
 args.add_argument("--batch_size", type=int, default=1)
@@ -38,7 +39,7 @@ device = torch.device("cuda:0" if args.use_gpu and torch.cuda.is_available() els
 
 vs, vs_props = getVideoStimulusLoader(args.stimulus_path, args.timesteps, batch_size=args.batch_size)
 rfs, rf_positions = randomRetinalGanglionRFs(vs_props["spatial_shape"], args.timesteps, args.population_size, rf_size=args.rf_size, off_prob=args.off_prob)
-model = LNP(vs_props["spatial_shape"], args.timesteps, args.population_size, rfs)
+model = LNP(vs_props["spatial_shape"], args.timesteps, args.population_size, rfs, noise_correlations=args.noise_corr)
 model.to(device)
 
 start = time.time()
@@ -58,6 +59,7 @@ data = {"stimulus": path.basename(args.stimulus_path),\
         "stimulus_duration_timesteps": args.timesteps,\
         "stimulus_spatial_shape": vs_props["spatial_shape"],\
         "population_size": args.population_size,\
+        "noise_correlations": args.noise_corr,\
         "rfs": rfs if args.save_rfs else None,\
         "rf_positions": rf_positions,\
         "off_prob": args.off_prob,\
