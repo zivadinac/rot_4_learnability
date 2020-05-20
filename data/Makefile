@@ -40,7 +40,7 @@ clean_simulated:
 
 ### corr_mat
 
-corr_mat: corr_mat/retina_64_rf_64 corr_mat/retina_128_rf_64 corr_mat/retina_256_rf_64
+corr_mat: corr_mat/prentice_et_al_2016 corr_mat/retina_64_rf_64 corr_mat/retina_128_rf_64 corr_mat/retina_256_rf_64
 	echo "Computed all correlation matrices."
 
 corr_mat/prentice_et_al_2016:
@@ -54,6 +54,9 @@ corr_mat/retina_128_rf_64: simulated/retina_128_rf_64
 
 corr_mat/retina_256_rf_64: simulated/retina_256_rf_64
 	make -C corr_mat input_size=256 rf_size=64
+
+corr_mat/prentice_et_al_2016: ../prentice_et_al_2016
+	make -C corr_mat prentice_et_al_2016
 
 clean_corr_mat:
 	make -C corr_mat clean

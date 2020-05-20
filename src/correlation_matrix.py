@@ -15,9 +15,8 @@ def computeCorrelationMatrix(spikes):
     corrs = np.array(corrs)
     return corr_mat#, corrs.mean(), corrs.abs().mean(), np.median(corrs)
 
-def __createCorrDataFileName(args):
+def __createCorrDataFileName(args, ps):
     stim = path.basename(args.data_path).split('.')[0]
-    ps = stim.split('_')[-1]
     return f"corr_ps_{ps}.pck"
 
 if __name__ == "__main__":
@@ -34,5 +33,5 @@ if __name__ == "__main__":
     d = {"corr_mat": corr, "population_size": ps,\
          "retained_neurons": retained_inds, "excluded_neurons": excluded_inds}
 
-    data_utils.save(path.join(args.out_path, __createCorrDataFileName(args)), d)
+    data_utils.save(path.join(args.out_path, __createCorrDataFileName(args, ps)), d)
 

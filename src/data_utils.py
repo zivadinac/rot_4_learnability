@@ -125,9 +125,12 @@ def loadSimulatedData(data_path, clip_bins=True, as_object=True):
 
     return data
 
+def isPrenticeData(data_path):
+    _, ext = path.splitext(data_path)
+    return ext == ".mat" # prentice et al data comes as .mat file, TODO maybe I should resave it as pickle?
+
 def loadSpikeData(data_path):
-    _, ext = path.splitext(data_path) # prentice et al data comes as .mat file, TODO maybe I should resave it as pickle?
-    return loadPrenticeEtAl2016(data_path, shuffle=False) if ext == ".mat" else loadSimulatedData(data_path)
+    return loadPrenticeEtAl2016(data_path, shuffle=False) if isPrenticeData(data_path) else loadSimulatedData(data_path)
 
 def saveSimulatedData(data_path, data):
     with open(data_path, "wb") as data_file:
