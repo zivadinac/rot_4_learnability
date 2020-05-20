@@ -17,7 +17,7 @@ retina_$(input_size)_rf_$(rf_size):
 
 prentice_et_al_2016:
 	mkdir $@
-	$(corr_cmd) --simulated_data 0 --out_path $@ --data_path ../prentice_et_al_2016/unique_natural_movie/data.mat
+	$(corr_cmd) --out_path $@ --data_path ../prentice_et_al_2016/unique_natural_movie/data.mat
 
 clean_$(input_size)_rf_$(rf_size):
 	rm -rf retina_$(input_size)_rf_$(rf_size)
