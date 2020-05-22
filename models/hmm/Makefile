@@ -6,7 +6,7 @@ rf_size?=64
 noise_corr?=0.5
 
 cross_val_folds?=2
-n_iter?=1
+n_iter?=100
 eta?=0.002
 seed?=$(shell date +%Y)$(shell date +%j)
 
