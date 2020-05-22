@@ -44,7 +44,7 @@ for i in range(row_num):
 
         data_name = "Prentice" if is_prentice else "Simulated"
         ax[i, j].set_title(f"{data_name} pairwise correlations, population size {ps}")
-        ax[i, j].hist(corrs, bins=300, label=f"mean={corr_mean}, abs mean = {corr_abs_mean}, median = {corr_median}")
+        ax[i, j].hist(corrs, bins=300, label=f"mean={corr_mean}, abs mean = {corr_abs_mean}, median = {corr_median}", density=True)
         ax[i, j].legend()
 
 

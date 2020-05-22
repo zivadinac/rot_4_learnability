@@ -4,109 +4,26 @@ import sys
 from os import path
 import pickle
 import data_utils
+import TreeHMM
 import EMBasins
-EMBasins.pyInit()
 import utils
 
-# This script is based on original script writen by Aditya:
-# https://github.com/adityagilra/UnsupervisedLearningNeuralData/blob/master/EMBasins_sbatch.py
 # TODO naming convention - change to snake_case as in other files
 
 args = ArgumentParser()
-args.add_argument("dataPath")
-args.add_argument("outPath")
-args.add_argument("--crossValFold", default=2, type=int, help="k-fold validation, 1 for train only")
-args.add_argument("--nModes", default=70, type=int, help="Best nModes reported for experimental data in Prentice et al 2016")
-args.add_argument("--nIter", default=100, type=int, help="HMM training iterations.")
+args.add_argument("data_path")
+args.add_argument("out_path")
+args.add_argument("--cross_val_folds", default=2, type=int, help="k-fold validation, 1 for train only")
+args.add_argument("--n_modes", default=70, type=int, help="Number of modes to use in HMM")
+args.add_argument("--eta", default=0.002, type=float, help="HMM regularization param.")
+args.add_argument("--n_iter", default=100, type=int, help="HMM training iterations.")
 args.add_argument("--seed", type=int, default=12345)
-#args.add_argument("--binSize", default=1)
-#args.add_argument("--shuffle", default=0, type=bool, help="Don't shuffle time bins for Prentice et al data,\
-#                                                but shuffle for Marre et al data and generated datasets")
 args = args.parse_args()
 
-"""
-args.dataPath = "../../data/retina_simulations_long/nat_stim_256_long_ps_32.pck"
-args.outPath = ".."
-args.crossValFold = 1
-args.nModes = 15
-args.nIter = 2
-"""
+spikes = data_utils.loadSpikeData(args.data_path).data
+hmm = TreeHMM.trainHMM(spikes, args.n_modes, args.n_iter, args.eta, cross_val_folds=args.cross_val_folds, seed=args.seed)
 
-np.random.seed(args.seed)
-binSize = 1 # here, spikes are given pre-binned into a spikeRaster, just take binSize=1
-
-spikeRaster = data_utils.loadSimulatedData(args.dataPath).data
-#spikeRaster = data_utils.loadPrenticeEtAl2016(args.dataPath, shuffle=False)
-nrnSpikeTimes = data_utils.spikeRasterToSpikeTimes(spikeRaster, binSize)
-nNeurons, tSteps = spikeRaster.shape
-
-print("Mixture model fitting for interaction factor = 1., nModes = ", args.nModes)
-sys.stdout.flush()
-    
-trainLogLi = np.zeros(shape=(args.crossValFold, args.nIter))
-testLogLi = np.zeros(shape=(args.crossValFold, args.nIter))
-
-train_iterations = args.nIter
-# TODO use same naming convention everywhere
-if args.crossValFold > 1:
-    # translated from getHMMParams.m 
-    # if I understand correctly:
-    #  to avoid losing temporal correlations,
-    #  we specify contiguous chunks of training data
-    #  by specifying upper _hi and lower _lo boundaries, as below
-    #  the rest becomes contiguous chunks of test data
-    #  thus, HMM::logli(true) in EMBasins.cpp gives training logli
-    #   and HMM::logli(false) gives test logli
-    bins = np.arange(tSteps) * binSize
-    shuffledIdxs = np.random.permutation(np.arange(tSteps, dtype=np.int32))
-    nTest = int(tSteps/args.crossValFold)
-    for k in range(args.crossValFold):
-        testIdxs = shuffledIdxs[k*nTest:(k+1)*nTest]
-        trainIdxs = np.zeros(tSteps,dtype=np.int32)
-        trainIdxs[testIdxs] = 1
-        
-        # contiguous 1s form a test chunk, i.e. are "unobserved"
-        #  see state_list assignment in the HMM constructor in EMBasins.cpp
-        flips = np.diff(np.append([0],trainIdxs))
-        unobserved_lo = bins[ flips == 1 ]
-        unobserved_hi = bins[ flips == -1 ]
-        # just in case, a last -1 is not there to close the last chunk
-        if (len(unobserved_hi) < len(unobserved_lo)):
-            unobserved_hi = np.append(unobserved_hi,[tSteps])
-
-        unobserved_lo = unobserved_lo.astype(np.float64)
-        unobserved_hi = unobserved_hi.astype(np.float64)
-
-        params,trans,P,emiss_prob,alpha,pred_prob,hist,samples,stationary_prob,trainLogLi_this,testLogLi_this = \
-            EMBasins.pyHMM(nrnSpikeTimes, unobserved_lo, unobserved_hi, float(binSize), args.nModes, args.nIter)
-
-        print(f"Finished cross validation round {k} of fitting.\
-                \nTrain logL = {trainLogLi_this[0][0]}\
-                \nTest logL = {testLogLi_this[0][0]}")
-
-        trainLogLi[k,:] = trainLogLi_this.flatten()
-        testLogLi[k,:] = testLogLi_this.flatten()
-
-        train_iterations = trainLogLi_this.shape[1]
-        if train_iterations != args.nIter:
-            trainLogLi = trainLogLi[:, 0:train_iterations]
-            testLogLi = testLogLi[:, 0:train_iterations]
-            print(f"Training finished after {train_iterations} iterations.")
-else: # no cross-validation specified, train on full data
-    # hmmmm this should be same as crossValFold = 1
-    params,trans,P,emiss_prob,alpha,pred_prob,hist,samples,stationary_prob,trainLogLi_this,testLogLi_this = \
-        EMBasins.pyHMM(nrnSpikeTimes, np.array([]), np.array([]), float(binSize), args.nModes, args.nIter)
-    trainLogLi[0,:] = trainLogLi_this.flatten()
-    testLogLi[0,:] = testLogLi_this.flatten()
-
-print(f"Finished fitting mixture model for \
-        \n\t interaction factor = 1.\
-        \n\t nModes = {args.nModes}\
-        \n\t logL = {trainLogLi}\
-        \n\t test logL = {testLogLi}")
-
-fitPath = path.join(args.outPath, path.basename(args.dataPath).split('.')[0] + f"_nModes_{args.nModes}.pck")
-utils.saveFit(fitPath, args.crossValFold, False, args.nModes, params, trans, P, emiss_prob, alpha, pred_prob, hist, samples, stationary_prob, trainLogLi, testLogLi)
-print(f"Fitted model saved to {fitPath}.")
-sys.stdout.flush()
+fit_path = path.join(args.out_path, path.basename(args.data_path).split('.')[0] + f"_nModes_{args.n_modes}.pck")
+TreeHMM.io.saveTrainedHMM(fit_path, hmm)
+print(f"Fitted model saved to {fit_path}.")
 
