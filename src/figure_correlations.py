@@ -1,13 +1,8 @@
 from argparse import ArgumentParser
 from os import path
 import numpy as np
-from scipy.io import loadmat
-from skimage.io import imsave
 import matplotlib.pyplot as plt
 import data_utils
-import utils
-from scipy.stats import pearsonr
-from pandas import DataFrame
 
 args = ArgumentParser()
 args.add_argument("--data_paths", nargs='*', help="List of files with correlation matrices for different population sizes.")
