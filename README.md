@@ -22,7 +22,6 @@ After building TreeHMM install it as a python package:
 
 ## Usage
 Script [src/simulation.py](https://github.com/zivadinac/rot_4_learnability/blob/master/src/simulation.py) simulates population of neurons for given visual stimulus (`python src/simulation.py -h` for detailed help).
-Multiple simulations can be run at the same time with [run_simulations.sh](https://github.com/zivadinac/rot_4_learnability/blob/master/run_simulations.sh).
-
 Script [src/fit_hmm.py](https://github.com/zivadinac/rot_4_learnability/blob/master/src/fit_hmm.py) fits HMM model to spike data (`python src/fit_hmm.py -h` for detailed help).
-Multiple HMM trainings can be run at the same time with [run_hmms.sh](https://github.com/zivadinac/rot_4_learnability/blob/master/run_hmms.sh).
+
+Additionally, `make` can be used to reproduce results (e.g. `make data`, `make figures` and more specific stuff). Work on this is still in progress, so detailed instructions will be available in the future.
