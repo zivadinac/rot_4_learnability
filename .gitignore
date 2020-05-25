@@ -143,3 +143,4 @@ data/corr_mat/prentice_*
 data/prentice_et_al_2016/*/
 data/prentice_et_al_2016/.DS_Store
 figures/retina_*
+models/*/retina_*
