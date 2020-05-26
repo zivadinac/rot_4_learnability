@@ -28,8 +28,7 @@ correlation_figures/retina_256_rf_64: data
 	make -C figures input_size=256 rf_size=64 retina_256_rf_64
 
 ## simulated retina with noise correlation 0.5
-#correlation_figures/retina_nc_0.5: correlation_figures/retina_64_rf_64_nc_0.5 correlation_figures/retina_128_rf_64_nc_0.5 correlation_figures/retina_256_rf_64_nc_0.5
-correlation_figures/retina_nc_0.5: correlation_figures/retina_64_rf_64_nc_0.5 correlation_figures/retina_128_rf_64_nc_0.5
+correlation_figures/retina_nc_0.5: correlation_figures/retina_64_rf_64_nc_0.5 correlation_figures/retina_128_rf_64_nc_0.5 correlation_figures/retina_256_rf_64_nc_0.5
 	@echo "Plotted correlation figures for simulated retina with noise correlation 0.5."
 
 correlation_figures/retina_64_rf_64_nc_0.5: data
