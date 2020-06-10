@@ -25,10 +25,10 @@ define hmm_ll_out_file
 $1/hmms_ps_$2.png
 endef
 
-n_modes_32=2 5 15 25 35
-n_modes_64=2 5 15 25 35 45 55 65
-n_modes_128=2 5 15 25 35 45 55 65 75 85 95 105 115 125 135
-n_modes_256=2 5 15 25 35 45 55 65 75 85 95 105 115 125 135 145 155 165
+n_modes_32=1 2 5 15 25 35
+n_modes_64=1 2 5 15 25 35 45 55 65
+n_modes_128=1 2 5 15 25 35 45 55 65 75 85 95 105 115 125
+n_modes_256=1 2 5 15 25 35 45 55 65 75 85 95 105 115 125
 
 ### simulated retina
 retina_$(input_size)_rf_$(rf_size): retina_$(input_size)_rf_$(rf_size)_hmm_ll

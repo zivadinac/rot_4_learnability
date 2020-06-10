@@ -1,4 +1,5 @@
 import torch
+from receptive_fields_Nonnenmacher import Nonnenmacher_RFs
 
 
 def __getNormalizedCos(timesteps):
@@ -20,7 +21,7 @@ def __get2DGaussian(shape, mu=0.0, sigma=1.0):
 
 def __getPositions(spatial_shape, population_size):
     positions = torch.randint(spatial_shape[0] * spatial_shape[1], (population_size,))
-    positions = [(p // spatial_shape[1], p % spatial_shape[1]) for p in positions]
+    positions = [torch.tensor([p // spatial_shape[1], p % spatial_shape[1]], dtype=torch.int32) for p in positions]
     return positions
 
 def randomRetinalGanglionRFs(spatial_shape, timesteps, population_size, rf_size=None, off_prob=0.2, mu=0.0, sigma_1=1.0, sigma_2=None):
@@ -50,7 +51,7 @@ def randomRetinalGanglionRFs(spatial_shape, timesteps, population_size, rf_size=
         spatial_RF /= spatial_RF.sum().abs()
         spatial_RF -= spatial_RF.mean()
 
-        temporal_RF = __getNormalizedCos(timesteps)
+        temporal_RF = __getNormalizedCos(timesteps) if timesteps > 1 else 1
         RF = spatial_RF * temporal_RF
 
         return RF

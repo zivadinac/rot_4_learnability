@@ -11,9 +11,11 @@ args = args.parse_args()
 
 
 col_num = 4
-row_num = int(len(args.n_modes) // col_num) + int(len(args.n_modes) % col_num > 0)
+row_num = int(len(args.n_modes) // col_num) + int((len(args.n_modes)) % col_num > 0)
 fig, ax = plt.subplots(row_num, col_num, figsize=(25, 13))
 fold = 0
+train_ll = []
+test_ll = []
 
 for i in range(row_num):
     for j in range(col_num):
@@ -24,10 +26,18 @@ for i in range(row_num):
         f = args.data_path + f"{m}.pck"
 
         hmm = TreeHMM.io.loadTrainedHMM(f)
+        train_ll.append(hmm[f"train_log_li"][fold][-1])
+        test_ll.append(hmm[f"test_log_li"][fold][-1])
+
         ax[i,j].set_title(f"n_modes = {m}")
         ax[i,j].plot(hmm[f"train_log_li"][fold], label="train")
         ax[i,j].plot(hmm[f"test_log_li"][fold], label="test")
         ax[i,j].legend()
 
+ax[-1,-1].set_title(f"log likelihood as a function of modes")
+ax[-1,-1].plot(args.n_modes, train_ll, label="train")
+ax[-1,-1].plot(args.n_modes, test_ll, label="test")
+ax[-1, -1].set_xticks(args.n_modes)
+ax[-1,-1].legend()
 plt.savefig(args.out_path)
 

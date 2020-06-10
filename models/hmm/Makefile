@@ -17,10 +17,10 @@ sim_nc_data_file=$(sim_nc_dir)/retina_$(input_size)_rf_$(rf_size)_nc_$(noise_cor
 corr_cmd_1 := xargs -P $(max_jobs) -n 1 python ../../src/fit_hmm.py 
 corr_cmd_2 := --cross_val_folds $(cross_val_folds) --n_iter $(n_iter) --eta $(eta) --seed $(seed) --n_modes 
 
-n_modes_32=2 5 15 25 35
-n_modes_64=2 5 15 25 35 45 55 65
-n_modes_128=2 5 15 25 35 45 55 65 75 85 95 105 115 125
-n_modes_256=2 5 15 25 35 45 55 65 75 85 95 105 115 125
+n_modes_32=1 2 5 15 25 35
+n_modes_64=1 2 5 15 25 35 45 55 65
+n_modes_128=1 2 5 15 25 35 45 55 65 75 85 95 105 115 125
+n_modes_256=1 2 5 15 25 35 45 55 65 75 85 95 105 115 125
 
 .PHONY: clean clean_$(input_size)_rf_$(rf_size) clean_prentice_et_al_2016
 

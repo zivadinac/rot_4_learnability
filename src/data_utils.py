@@ -50,6 +50,11 @@ def spikeTimesToSpikeRaster(nrnSpikeTimes, binsteps):
         spikeRaster[ nrnnum, (np.array(nrnSpikeTimes[nrnnum]) / binsteps).astype(int) ] = 1.
     return spikeRaster
 
+def loadPrenticeEtAl2016Raw(data_path, as_object=True):
+    data = scipy.io.loadmat(data_path)
+    d = {"data": data["bint"]}
+    return ObjView(d) if as_object else d
+
 def loadPrenticeEtAl2016(data_path, shuffle=True, seed=100, as_object=True):
     """ Load Prentice et al 2016 dataset.
         Args:
